@@ -38,23 +38,28 @@ public class App {
 	public static void calcHash(Path src) {
 		log.info("calc hash - " + src);
 		
-		// 1/10でエラーにする
-		if(rand.nextInt(10) == 0) {
-			calcError(src);
-			return;
+		try {
+			// 1/10でエラーにする
+			if(rand.nextInt(10) == 0) {
+				calcError(src);
+				return;
+			}
+			
+			val md = MessageDigest.getInstance("SHA-256");
+			
+			md.update(Files.readAllBytes(src));
+	
+			val sb = new StringBuilder();
+	        for(byte b: md.digest()) {
+	        	sb.append(String.format("%02x", b&0xff));
+	        }
+	
+			Files.write(OUT.resolve(src.getFileName() + ".xml"), sb.toString().getBytes());
+			log.info(" - SUCCESS " + src.getFileName());
 		}
-		
-		val md = MessageDigest.getInstance("SHA-256");
-		
-		md.update(Files.readAllBytes(src));
-
-		val sb = new StringBuilder();
-        for(byte b: md.digest()) {
-        	sb.append(String.format("%02x", b&0xff));
-        }
-
-		Files.write(OUT.resolve(src.getFileName() + ".xml"), sb.toString().getBytes());
-		log.info(" - SUCCESS " + src.getFileName());
+		finally {
+			Files.delete(src);
+		}
 	}
 	
 	@SneakyThrows
